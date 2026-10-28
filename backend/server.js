@@ -499,9 +499,15 @@ app.get("/login", (req, res) => {
   res.render("login");
 });
 
+console.log(
+  "MongoDB URI configured:",
+  Boolean(process.env.MONGODB_URI)
+);
 // Connect to MongoDB and start the server
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 15000,
+  })
   .then(() => {
     console.log("MongoDB connected successfully");
 
@@ -512,8 +518,6 @@ mongoose
     });
   })
   .catch((error) => {
-    console.error(
-      "MongoDB connection failed:",
-      error.message
-    );
+    console.error("MongoDB connection failed:", error);
+    process.exit(1);
   });
