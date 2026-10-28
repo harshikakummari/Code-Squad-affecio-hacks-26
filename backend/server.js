@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const session = require("express-session");
 const MongoStore = require("connect-mongo").default;
-const User = require("./models/user.js");
+const User = require("./models/User.js");
 const bcrypt = require("bcryptjs");
 const Auth = require("./models/Auth");
 const calculateCompatibility = require("./utils/compatibility");
