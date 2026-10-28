@@ -1,0 +1,889 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beyond the Swipe ❤️</title>
+  <link rel="stylesheet" href="/style.css">
+
+  <style>
+    [hidden] {
+      display: none !important;
+    }
+
+    .compatibility-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      overflow-y: auto;
+      background: rgba(35, 16, 27, 0.90);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .compatibility-panel {
+      position: relative;
+      width: min(950px, 100%);
+      min-height: 70vh;
+      max-height: 95vh;
+      overflow-y: auto;
+      background: #fff8fb;
+      color: #34212b;
+      border-radius: 24px;
+      padding: 35px 22px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .compatibility-close {
+      position: sticky;
+      float: right;
+      top: 0;
+      border: 0;
+      background: transparent;
+      font-size: 32px;
+      cursor: pointer;
+      color: #8a4562;
+    }
+
+    .compatibility-summary {
+      margin: 28px auto;
+      max-width: 650px;
+    }
+
+    .compatibility-big-score {
+      font-size: clamp(48px, 10vw, 88px);
+      font-weight: 800;
+      color: #d9487d;
+      margin: 12px 0;
+    }
+
+    .compatibility-message {
+      font-size: 1.15rem;
+      line-height: 1.6;
+    }
+
+    .compatible-profiles-list {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      text-align: left;
+    }
+
+    .compatible-result-card {
+      background: white;
+      border: 1px solid #f3c6d8;
+      border-radius: 16px;
+      padding: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .compatible-result-card img {
+      width: 100%;
+      height: 190px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .compatible-result-card h3 {
+      margin-bottom: 6px;
+    }
+
+    .compatible-result-card p {
+      line-height: 1.45;
+    }
+
+    body.compatibility-open {
+      overflow: hidden;
+    }
+
+    .compatibility-score-label {
+      color: #d9487d;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  
+<div style="text-align: right; padding: 15px;">
+  <form action="/logout" method="POST">
+    <button type="submit">Log Out</button>
+  </form>
+</div>
+
+  <header class="page-header">
+    <nav class="main-nav">
+      <a href="/" class="brand">
+        <span class="brand-heart">♥</span>
+        Beyond the Swipe
+      </a>
+
+      <div class="nav-links">
+        <a href="#discover">Discover</a>
+        <a href="#create-profile">Create Profile</a>
+      </div>
+
+      <a href="#discover" class="nav-cta">Find Your Match ♥</a>
+    </nav>
+
+    <div class="hero-content">
+      <span class="hero-label">CONNECTIONS THAT MATTER</span>
+
+      <h1>
+        More than a swipe.<br>
+        <span>Something meaningful.</span>
+      </h1>
+
+      <p>
+        Discover people who share your interests, your hobbies,
+        and the things that make you, you.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#discover" class="hero-button">
+          Discover People <span>→</span>
+        </a>
+
+        <a href="#create-profile" class="hero-secondary">
+          Create Your Profile
+        </a>
+      </div>
+
+      <div class="hero-note">
+        <span>♥</span> Real interests. Meaningful connections.
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="profiles" id="discover">
+      <h2>Discover People 💕</h2>
+
+      <!-- Looking For Filter -->
+      <form action="/" method="GET" class="filter-form">
+        <div class="filter-field">
+          <label for="lookingForFilter">I'm interested in</label>
+
+          <select name="lookingFor" id="lookingForFilter">
+            <option value=""
+              <%= (!selectedLookingFor) ? "selected" : "" %>>
+              Everyone
+            </option>
+
+            <option value="Friendship"
+              <%= selectedLookingFor === "Friendship" ? "selected" : "" %>>
+              Friendship 🤝
+            </option>
+
+            <option value="Relationship"
+              <%= selectedLookingFor === "Relationship" ? "selected" : "" %>>
+              Relationship 💗
+            </option>
+
+            <option value="Both"
+              <%= selectedLookingFor === "Both" ? "selected" : "" %>>
+              Both ✨
+            </option>
+          </select>
+        </div>
+
+        <button type="submit">Discover Matches ♥</button>
+        <a href="/" class="clear-filter">Clear</a>
+      </form>
+
+      <!-- Select Current Profile -->
+      <section class="current-user-section">
+        <label for="currentUser">
+          <strong>Your profile:</strong>
+        </label>
+
+       
+<div id="currentUserContainer">
+  <% if (account && account.profile) { %>
+    <p>
+      <strong>Your profile:</strong>
+      <span><%= account.profile.name %></span>
+    </p>
+    <input
+      type="hidden"
+      id="currentUser"
+      value="<%= account.profile._id %>"
+    >
+  <% } else { %>
+    <p>You haven't created your profile yet.</p>
+    <a href="#create-profile">Create your profile</a>
+  <% } %>
+</div>
+
+
+        <p class="helper-text">
+          Select your profile before liking someone or calculating compatibility.
+        </p>
+
+        <button
+          type="button"
+          id="calculateCompatibilityBtn"
+          onclick="calculateCompatibilityNow()"
+        >
+          Calculate Compatibility 💕
+        </button>
+      </section>
+
+      <!-- People Who Liked You -->
+      <section class="liked-by-section" id="liked-by">
+        <div class="liked-by-heading">
+          <span class="section-label">A LITTLE ADMIRATION 💗</span>
+          <h2>People Who Liked You</h2>
+          <p>Someone might already be interested in getting to know you.</p>
+        </div>
+
+        <div id="liked-by-content" class="liked-by-content">
+          <p class="liked-by-empty">
+            Select your profile to see who liked you.
+          </p>
+        </div>
+      </section>
+
+      <!-- Create Profile -->
+      <section class="create-profile-section" id="create-profile">
+        <details>
+          <summary>Create a new profile 💗</summary>
+
+          <form action="/api/users" method="POST" class="create-profile-form">
+            <input
+              type="text"
+              name="name"
+              placeholder="Your name"
+              required
+            >
+
+            <input
+              type="number"
+              name="age"
+              placeholder="Your age (18+)"
+              min="18"
+              required
+            >
+
+            <input
+              type="url"
+              name="photo"
+              placeholder="Profile photo URL (https://...)"
+              required
+            >
+
+            <textarea
+              name="bio"
+              placeholder="Tell us about yourself"
+              required
+            ></textarea>
+
+            <input
+              type="text"
+              name="interests"
+              placeholder="Interests (comma-separated)"
+              required
+            >
+
+            <input
+              type="text"
+              name="location"
+              placeholder="Your city"
+              required
+            >
+
+            <input
+              type="text"
+              name="preferredHobbies"
+              placeholder="Preferred hobbies (comma-separated)"
+              required
+            >
+
+            <input
+              type="text"
+              name="music"
+              placeholder="Favourite music"
+            >
+
+            <select name="lookingFor" required>
+              <option value="">What are you looking for?</option>
+              <option value="Friendship">Friendship</option>
+              <option value="Relationship">Relationship</option>
+              <option value="Both">Both</option>
+            </select>
+
+            <button type="submit">Create Profile</button>
+          </form>
+        </details>
+      </section>
+
+      <!-- Profile Cards -->
+      <% if (users.length === 0) { %>
+        <p class="empty-message">
+          No profiles found. Try another filter or create a profile!
+        </p>
+      <% } else { %>
+        <div class="profile-list">
+          <% users.forEach((user) => { %>
+            <article class="profile-card">
+              <img
+                class="profile-photo"
+                src="<%= user.photo %>"
+                alt="<%= user.name %>'s profile photo"
+                loading="lazy"
+                onerror="this.onerror=null;this.src='https://placehold.co/400x500/fce7ee/c94f78?text=Profile';"
+              >
+
+              <h3><%= user.name %></h3>
+
+              <p><strong>Age:</strong> <%= user.age %></p>
+              <p><%= user.bio || "No bio added yet." %></p>
+
+              <div class="profile-tags">
+                <% (user.interests || []).forEach((interest) => { %>
+                  <span class="profile-tag"><%= interest %></span>
+                <% }) %>
+              </div>
+
+              <p>
+                <strong>Location:</strong>
+                <%= user.location || "Not added" %>
+              </p>
+
+              <div class="profile-hobbies">
+                <strong>Looking to enjoy:</strong>
+                <div class="profile-tags">
+                  <% (user.preferredHobbies || []).forEach((hobby) => { %>
+                    <span class="profile-tag hobby-tag"><%= hobby %></span>
+                  <% }) %>
+                </div>
+              </div>
+
+              <p>
+                <strong>Looking For:</strong>
+                <%= user.lookingFor %>
+              </p>
+
+              <% if (user.music) { %>
+                <p>
+                  <strong>Favourite Music:</strong>
+                  <%= user.music %>
+                </p>
+              <% } %>
+           
+              <div class="profile-compatibility-actions">
+  <button
+    type="button"
+    onclick="calculateCompatibilityForProfile('<%= user._id %>')"
+  >
+    Calculate Compatibility 💕
+  </button>
+
+  <button
+    type="button"
+    onclick="openCompatibleMatches('<%= user._id %>')"
+  >
+    Show Compatible Matches
+  </button>
+</div>
+
+              <button
+                type="button"
+                class="like-btn"
+                data-user-id="<%= user._id %>"
+                onclick="likeProfile('<%= user._id %>', this)"
+              >
+                <span class="heart">♥</span>
+                <span class="like-text">Like</span>
+              </button>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <!-- Full-Screen Compatibility Results -->
+    <section
+      id="compatibilityOverlay"
+      class="compatibility-overlay"
+      hidden
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="compatibilityTitle"
+    >
+      <div class="compatibility-panel">
+        <button
+          type="button"
+          class="compatibility-close"
+          onclick="closeCompatibilityResults()"
+          aria-label="Close results"
+        >×</button>
+
+        <span class="section-label">BEYOND THE SWIPE 💗</span>
+
+        <h2 id="compatibilityTitle">Your Compatibility Results</h2>
+
+        <div id="compatibilitySummary" class="compatibility-summary">
+          <p>Calculate your compatibility to see your results.</p>
+        </div>
+
+        <button
+          type="button"
+          id="showCompatibleProfilesBtn"
+          onclick="showCompatibleProfiles()"
+          hidden
+        >
+          Show Compatible Profiles
+        </button>
+
+        <div
+          id="compatibleProfilesList"
+          class="compatible-profiles-list"
+          hidden
+        ></div>
+      </div>
+    </section>
+  </main>
+
+  
+  <script>
+    const currentUserSelect = document.getElementById("currentUser");
+
+    // Store the latest compatibility results.
+    let latestCompatibilityResults = null;
+
+    // Restore previously selected profile.
+    currentUserSelect.value =
+      localStorage.getItem("currentUserId") || "";
+
+    // Update page features when the profile changes.
+    currentUserSelect.addEventListener("change", function () {
+      if (this.value) {
+        localStorage.setItem("currentUserId", this.value);
+      } else {
+        localStorage.removeItem("currentUserId");
+      }
+
+      latestCompatibilityResults = null;
+
+      document.getElementById("compatibleProfilesList").hidden = true;
+      document.getElementById("showCompatibleProfilesBtn").hidden = true;
+
+      closeCompatibilityResults();
+      loadExistingLikes();
+      loadPeopleWhoLikedYou();
+    });
+
+    // Load profiles already liked by the selected user.
+    async function loadExistingLikes() {
+      const currentUserId = currentUserSelect.value;
+
+      document.querySelectorAll(".like-btn").forEach((button) => {
+        button.classList.remove("liked");
+        button.disabled = false;
+        button.querySelector(".like-text").textContent = "Like";
+      });
+
+      if (!currentUserId) return;
+
+      try {
+        const response = await fetch(
+          `/api/users/${currentUserId}/likes`
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const likes = data.likes || [];
+
+        document.querySelectorAll(".like-btn").forEach((button) => {
+          const likedUserId = button.dataset.userId;
+
+          if (likedUserId === currentUserId) {
+            button.disabled = true;
+            button.querySelector(".like-text").textContent = "Your Profile";
+            return;
+          }
+
+          if (likes.includes(likedUserId)) {
+            button.classList.add("liked");
+            button.querySelector(".like-text").textContent = "Liked";
+            button.disabled = true;
+          }
+        });
+      } catch (error) {
+        console.error("Could not load existing likes:", error);
+      }
+    }
+
+    // Send a like to the backend.
+    async function likeProfile(likedUserId, button) {
+      const currentUserId = currentUserSelect.value;
+
+      if (!currentUserId) {
+        alert("Please select your profile first ❤️");
+        currentUserSelect.focus();
+        return;
+      }
+
+      if (currentUserId === likedUserId) {
+        alert("You cannot like your own profile!");
+        return;
+      }
+
+      if (button.disabled) return;
+
+      button.disabled = true;
+
+      try {
+        const response = await fetch(
+          `/api/users/${currentUserId}/like`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ likedUserId })
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert(result.message || "Could not send like.");
+          button.disabled = false;
+          return;
+        }
+
+        button.classList.add("liked");
+        button.querySelector(".heart").textContent = "♥";
+        button.querySelector(".like-text").textContent = "Liked";
+
+        alert(result.message || "Like sent! ❤️");
+
+        loadPeopleWhoLikedYou();
+      } catch (error) {
+        console.error("Like request failed:", error);
+        alert("Something went wrong. Please try again.");
+        button.disabled = false;
+      }
+    }
+
+    // Load people who liked the selected profile.
+    async function loadPeopleWhoLikedYou() {
+      const content = document.getElementById("liked-by-content");
+      const currentUserId = currentUserSelect.value;
+
+      if (!currentUserId) {
+        content.innerHTML =
+          '<p class="liked-by-empty">Select your profile to see who liked you. 💗</p>';
+        return;
+      }
+
+      content.innerHTML =
+        '<p class="liked-by-empty">Loading your likes... 💕</p>';
+
+      try {
+        const response = await fetch(
+          `/api/users/${currentUserId}/liked-by`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Could not load likes");
+        }
+
+        if (!data.people || data.people.length === 0) {
+          content.innerHTML =
+            '<p class="liked-by-empty">No likes yet. Your meaningful connection may be on the way! 💗</p>';
+          return;
+        }
+
+        content.replaceChildren();
+
+        data.people.forEach((person) => {
+          const card = document.createElement("article");
+          card.className = "liked-person-card";
+
+          const photo = document.createElement("img");
+          photo.src = person.photo ||
+            "https://placehold.co/100x100/fce7ee/c94f78?text=Profile";
+          photo.alt = `${person.name}'s profile photo`;
+
+          photo.onerror = function () {
+            this.onerror = null;
+            this.src =
+              "https://placehold.co/100x100/fce7ee/c94f78?text=Profile";
+          };
+
+          const name = document.createElement("h3");
+          name.textContent = person.name || "Unknown";
+
+          const age = document.createElement("p");
+          age.textContent = person.age
+            ? `${person.age} years old`
+            : "Age not added";
+
+          const location = document.createElement("p");
+          location.textContent = person.location || "Location not added";
+
+          const bio = document.createElement("p");
+          bio.textContent = person.bio || "No bio added yet.";
+
+          card.append(photo, name, age, location, bio);
+          content.appendChild(card);
+        });
+      } catch (error) {
+        console.error("Error loading likes:", error);
+
+        content.innerHTML =
+          '<p class="liked-by-empty">Could not load likes. Please refresh and try again.</p>';
+      }
+    }
+
+    // Calculate compatibility only when the button is clicked.
+    async function calculateCompatibilityNow() {
+      const currentUserId = currentUserSelect.value;
+
+      if (!currentUserId) {
+        alert("Please select your profile first ❤️");
+        currentUserSelect.focus();
+        return;
+      }
+
+      const overlay = document.getElementById("compatibilityOverlay");
+      const summary = document.getElementById("compatibilitySummary");
+      const list = document.getElementById("compatibleProfilesList");
+      const showButton = document.getElementById("showCompatibleProfilesBtn");
+      const calculateButton = document.getElementById("calculateCompatibilityBtn");
+
+      overlay.hidden = false;
+      document.body.classList.add("compatibility-open");
+
+      summary.textContent = "Calculating compatibility for your profile... 💕";
+      list.hidden = true;
+      list.replaceChildren();
+      showButton.hidden = true;
+      calculateButton.disabled = true;
+
+      try {
+        const response = await fetch(
+          `/api/users/${currentUserId}/compatibility`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message || "Could not calculate compatibility."
+          );
+        }
+
+        // Ignore results if the selected profile changed during the request.
+        if (currentUserSelect.value !== currentUserId) {
+          closeCompatibilityResults();
+          return;
+        }
+
+        latestCompatibilityResults = data;
+
+        const topMatch = data.topMatch;
+
+        if (!topMatch) {
+          summary.innerHTML = `
+            <div class="compatibility-big-score">—</div>
+            <p class="compatibility-message">
+              Create another profile to discover your compatibility. 💗
+            </p>
+            <p>No other profiles are available to compare yet.</p>
+          `;
+          return;
+        }
+
+        const score = Number(topMatch.score) || 0;
+
+        const heading = document.createElement("p");
+        heading.textContent =
+          `Your highest compatibility is with ${topMatch.name}`;
+
+        const bigScore = document.createElement("div");
+        bigScore.className = "compatibility-big-score";
+        bigScore.textContent = `${score}%`;
+
+        const message = document.createElement("p");
+        message.className = "compatibility-message";
+
+        if (score > 50) {
+          message.textContent =
+            `You have a promising connection with ${topMatch.name}! Shared interests can be a great starting point. 💕`;
+        } else {
+          message.textContent =
+            "No profiles are above 50% compatibility yet. Explore more profiles and shared interests to discover stronger connections. 💗";
+        }
+
+        const count = document.createElement("p");
+        const countStrong = document.createElement("strong");
+        countStrong.textContent = data.compatibleCount;
+
+        count.append(
+          countStrong,
+          document.createTextNode(
+            ` compatible profile(s) above 50%, out of ${data.totalProfilesChecked} profile(s) checked.`
+          )
+        );
+
+        summary.replaceChildren(heading, bigScore, message, count);
+
+        showButton.hidden = data.compatibleCount === 0;
+        showButton.textContent =
+          `Show Compatible Profiles (${data.compatibleCount})`;
+      } catch (error) {
+        console.error("Compatibility request failed:", error);
+
+        summary.textContent =
+          error.message || "Unable to calculate compatibility. Please try again.";
+      } finally {
+        calculateButton.disabled = false;
+      }
+    }
+
+    // Show only profiles whose compatibility score is strictly above 50%.
+    function showCompatibleProfiles() {
+      const list = document.getElementById("compatibleProfilesList");
+      const results = latestCompatibilityResults;
+
+      list.replaceChildren();
+
+      const profiles = results?.compatibleProfiles || [];
+
+      if (profiles.length === 0) {
+        list.textContent = "No compatible profiles found above 50% yet.";
+        list.hidden = false;
+        return;
+      }
+
+      profiles.forEach((profile) => {
+        // Extra safety: exclude scores of 50% or below.
+        if (Number(profile.score) <= 50) return;
+
+        const card = document.createElement("article");
+        card.className = "compatible-result-card";
+
+        const photo = document.createElement("img");
+        photo.src = profile.photo ||
+          "https://placehold.co/400x300/fce7ee/c94f78?text=Profile";
+        photo.alt = `${profile.name}'s profile photo`;
+
+        photo.onerror = function () {
+          this.onerror = null;
+          this.src =
+            "https://placehold.co/400x300/fce7ee/c94f78?text=Profile";
+        };
+
+        const name = document.createElement("h3");
+        name.textContent =
+          `${profile.name || "Unknown"}${profile.age ? `, ${profile.age}` : ""}`;
+
+        const score = document.createElement("p");
+        score.className = "compatibility-score-label";
+        score.textContent = `${profile.score}% compatible 💕`;
+
+        const bio = document.createElement("p");
+        bio.textContent = profile.bio || "No bio added yet.";
+
+        const location = document.createElement("p");
+        location.textContent =
+          `Location: ${profile.location || "Not added"}`;
+
+        const interests = document.createElement("p");
+        const commonInterests = profile.commonInterests || [];
+        interests.textContent = commonInterests.length
+          ? `Shared interests: ${commonInterests.join(", ")}`
+          : "No shared interests listed.";
+
+        const hobbies = document.createElement("p");
+        const commonHobbies = profile.commonHobbies || [];
+        hobbies.textContent = commonHobbies.length
+          ? `Shared hobbies: ${commonHobbies.join(", ")}`
+          : "No shared hobbies listed.";
+
+        card.append(
+          photo,
+          name,
+          score,
+          bio,
+          location,
+          interests,
+          hobbies
+        );
+
+        list.appendChild(card);
+      });
+
+      if (!list.children.length) {
+        list.textContent = "No compatible profiles found above 50% yet.";
+      }
+
+      list.hidden = false;
+    }
+
+    // Close full-screen compatibility results.
+    function closeCompatibilityResults() {
+      document.getElementById("compatibilityOverlay").hidden = true;
+      document.body.classList.remove("compatibility-open");
+    }
+
+    // Close results with Escape key.
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeCompatibilityResults();
+      }
+    });
+
+    // Initialize page features.
+    loadExistingLikes();
+    loadPeopleWhoLikedYou();
+
+    
+async function calculateCompatibilityForProfile(profileId) {
+  const currentUserId = document.getElementById("currentUser").value;
+
+  if (!currentUserId) {
+    alert("Please select your profile first ❤️");
+    return;
+  }
+
+  if (currentUserId !== profileId) {
+    document.getElementById("currentUser").value = profileId;
+    localStorage.setItem("currentUserId", profileId);
+
+    if (typeof loadExistingLikes === "function") {
+      loadExistingLikes();
+    }
+
+    if (typeof loadPeopleWhoLikedYou === "function") {
+      loadPeopleWhoLikedYou();
+    }
+  }
+
+  if (typeof calculateCompatibilityNow === "function") {
+    await calculateCompatibilityNow();
+  } else {
+    alert("Compatibility calculation function is missing.");
+  }
+}
+
+function openCompatibleMatches(profileId) {
+  window.location.href = `/matches/${profileId}`;
+}
+
+  </script>
+</body>
+</html>
